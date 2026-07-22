@@ -1,9 +1,9 @@
 /**
- * Real-time High-Performance Animated Perlin Noise Engine
- * Supports Light & Dark Grayscale Texture Inversion
+ * Dynamic 3D Organic Perlin Noise Generator
+ * Evaluates Z-axis time domain in real-time for continuous fluid recalculation ("tv static" style organic evolution)
  */
 
-class OrganicClassicPerlinNoise {
+class DynamicStaticPerlinNoise {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) return;
@@ -12,23 +12,22 @@ class OrganicClassicPerlinNoise {
     this.width = 0;
     this.height = 0;
 
-    // Buffer canvas for fast pixel manipulation
+    // Buffer canvas for high-performance direct pixel rendering
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
 
-    // Scale factor for balanced 60 FPS performance
-    this.scale = 0.25; 
+    // Scale resolution factor for smooth 60 FPS computation
+    this.scale = 0.28; 
 
-    // Time & Motion Controls
-    this.time = 0;
-    this.speed = 0.015; // Visible active animation speed
+    // Time domain Z evolution speed (creates continuous noise generation / static morphing)
+    this.zTime = 0;
+    this.zSpeed = 0.012; 
+
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scroll = 0;
     this.targetScroll = 0;
 
-    // Active Theme State
     this.theme = document.documentElement.getAttribute('data-theme') || 'dark';
-
     this.animationFrameId = null;
 
     this.initPermutation();
@@ -56,25 +55,42 @@ class OrganicClassicPerlinNoise {
 
   fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
   lerp(t, a, b) { return a + t * (b - a); }
-  grad(hash, x, y) {
-    const h = hash & 7;
-    const u = h < 4 ? x : y;
-    const v = h < 4 ? y : x;
+
+  grad3D(hash, x, y, z) {
+    const h = hash & 15;
+    const u = h < 8 ? x : y;
+    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
     return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
   }
 
-  perlin2D(x, y) {
+  /**
+   * 3D Perlin Noise: Time (z) changes values at fixed (x,y) pixels like dynamic organic static
+   */
+  perlin3D(x, y, z) {
     const X = Math.floor(x) & 255;
     const Y = Math.floor(y) & 255;
+    const Z = Math.floor(z) & 255;
+
     x -= Math.floor(x);
     y -= Math.floor(y);
+    z -= Math.floor(z);
+
     const u = this.fade(x);
     const v = this.fade(y);
-    const A = this.perm[X] + Y, B = this.perm[X + 1] + Y;
+    const w = this.fade(z);
 
-    return this.lerp(v,
-      this.lerp(u, this.grad(this.perm[A], x, y), this.grad(this.perm[B], x - 1, y)),
-      this.lerp(u, this.grad(this.perm[A + 1], x, y - 1), this.grad(this.perm[B + 1], x - 1, y - 1))
+    const A  = this.perm[X] + Y, AA = this.perm[A] + Z, AB = this.perm[A + 1] + Z;
+    const B  = this.perm[X + 1] + Y, BA = this.perm[B] + Z, BB = this.perm[B + 1] + Z;
+
+    return this.lerp(w,
+      this.lerp(v,
+        this.lerp(u, this.grad3D(this.perm[AA], x, y, z), this.grad3D(this.perm[BA], x - 1, y, z)),
+        this.lerp(u, this.grad3D(this.perm[AB], x, y - 1, z), this.grad3D(this.perm[BB], x - 1, y - 1, z))
+      ),
+      this.lerp(v,
+        this.lerp(u, this.grad3D(this.perm[AA + 1], x, y, z - 1), this.grad3D(this.perm[BA + 1], x - 1, y, z - 1)),
+        this.lerp(u, this.grad3D(this.perm[AB + 1], x, y - 1, z - 1), this.grad3D(this.perm[BB + 1], x - 1, y - 1, z - 1))
+      )
     );
   }
 
@@ -86,7 +102,6 @@ class OrganicClassicPerlinNoise {
 
   setTheme(newTheme) {
     this.theme = newTheme;
-    // Force immediate frame redraw on theme switch
     this.render();
   }
 
@@ -122,49 +137,51 @@ class OrganicClassicPerlinNoise {
   }
 
   render() {
-    // Smooth LERP mouse & scroll
+    // Mouse and scroll smooth LERP
     this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
     this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
     this.scroll += (this.targetScroll - this.scroll) * 0.05;
 
-    // Increment time for continuous animation
-    this.time += this.speed;
+    // Advance Z axis time for dynamic pixel-by-pixel noise generation
+    this.zTime += this.zSpeed;
 
     const bufW = this.offscreen.width;
     const bufH = this.offscreen.height;
     const imgData = this.offCtx.createImageData(bufW, bufH);
     const data = imgData.data;
 
-    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 1.2;
-    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 1.2;
+    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.5;
+    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.5;
 
-    const frequency = 0.035;
+    const frequency = 0.038; // Density of noise texture
 
     const isLight = this.theme === 'light';
 
-    // Distinct theme ranges for immediate visual contrast
-    // Dark mode: ~15 to ~75 (Deep Dark Charcoal Noise)
-    // Light mode: ~180 to ~245 (Crisp Light Platinum Noise)
+    // Greyscale ranges
+    // Dark mode: 15 to 75 (Deep charcoal morphing noise)
+    // Light mode: 180 to 245 (Soft platinum morphing noise)
     const baseVal = isLight ? 180 : 15;
     const rangeVal = isLight ? 65 : 60;
 
     let ptr = 0;
     for (let y = 0; y < bufH; y++) {
       for (let x = 0; x < bufW; x++) {
-        // Active motion coordinates combining time + mouse + scroll
-        const nx = x * frequency + mouseXNorm + this.time;
-        const ny = y * frequency + mouseYNorm + (this.scroll * 0.003) + (this.time * 0.5);
+        // FIXED (x,y) screen coordinates + Z-Time evolution + mouse/scroll reactivity
+        const nx = x * frequency + mouseXNorm;
+        const ny = y * frequency + mouseYNorm + (this.scroll * 0.002);
+        const nz = this.zTime;
 
-        let n = this.perlin2D(nx, ny) * 0.65;
-        n += this.perlin2D(nx * 2.0, ny * 2.0) * 0.35;
+        // Multi-octave 3D Perlin Noise calculation
+        let n = this.perlin3D(nx, ny, nz) * 0.65;
+        n += this.perlin3D(nx * 2.0, ny * 2.0, nz * 1.5) * 0.35;
 
         const normalized = Math.min(Math.max((n + 1) * 0.5, 0), 1);
         const greyVal = Math.floor(normalized * rangeVal + baseVal);
 
-        data[ptr]     = greyVal;     // R
-        data[ptr + 1] = greyVal;     // G
-        data[ptr + 2] = greyVal;     // B
-        data[ptr + 3] = 255;         // Alpha
+        data[ptr]     = greyVal;
+        data[ptr + 1] = greyVal;
+        data[ptr + 2] = greyVal;
+        data[ptr + 3] = 255;
         ptr += 4;
       }
     }
@@ -195,9 +212,8 @@ class OrganicClassicPerlinNoise {
   }
 }
 
-// Global reference for theme toggle
 window.perlinEngine = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  window.perlinEngine = new OrganicClassicPerlinNoise('noise-canvas');
+  window.perlinEngine = new DynamicStaticPerlinNoise('noise-canvas');
 });
