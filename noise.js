@@ -1,6 +1,6 @@
 /**
- * Classic Organic Perlin Noise Texture Engine
- * Dual-Theme Support (Dark & Light Greyscale) + Smooth 60fps Performance
+ * Real-time High-Performance Animated Perlin Noise Engine
+ * Supports Light & Dark Grayscale Texture Inversion
  */
 
 class OrganicClassicPerlinNoise {
@@ -12,25 +12,24 @@ class OrganicClassicPerlinNoise {
     this.width = 0;
     this.height = 0;
 
-    // Offscreen render buffer for pixel-grid noise computation
+    // Buffer canvas for fast pixel manipulation
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
 
-    // Scale factor to maintain high FPS performance (0.28 resolution scale)
-    this.scale = 0.28; 
+    // Scale factor for balanced 60 FPS performance
+    this.scale = 0.25; 
 
     // Time & Motion Controls
     this.time = 0;
-    this.speed = 0.005; // Continuous organic animation speed
+    this.speed = 0.015; // Visible active animation speed
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scroll = 0;
     this.targetScroll = 0;
 
-    // Theme Mode: 'dark' or 'light'
+    // Active Theme State
     this.theme = document.documentElement.getAttribute('data-theme') || 'dark';
 
     this.animationFrameId = null;
-    this.isLowPower = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.initPermutation();
     this.init();
@@ -87,6 +86,8 @@ class OrganicClassicPerlinNoise {
 
   setTheme(newTheme) {
     this.theme = newTheme;
+    // Force immediate frame redraw on theme switch
+    this.render();
   }
 
   resize() {
@@ -111,7 +112,7 @@ class OrganicClassicPerlinNoise {
     }, { passive: true });
 
     window.addEventListener('scroll', () => {
-      this.targetScroll = window.scrollY * 0.08;
+      this.targetScroll = window.scrollY * 0.1;
     }, { passive: true });
 
     document.addEventListener('visibilitychange', () => {
@@ -121,11 +122,12 @@ class OrganicClassicPerlinNoise {
   }
 
   render() {
-    // Smooth LERP mouse & scroll interaction
-    this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.03;
-    this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.03;
-    this.scroll += (this.targetScroll - this.scroll) * 0.03;
+    // Smooth LERP mouse & scroll
+    this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
+    this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
+    this.scroll += (this.targetScroll - this.scroll) * 0.05;
 
+    // Increment time for continuous animation
     this.time += this.speed;
 
     const bufW = this.offscreen.width;
@@ -133,27 +135,28 @@ class OrganicClassicPerlinNoise {
     const imgData = this.offCtx.createImageData(bufW, bufH);
     const data = imgData.data;
 
-    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.6;
-    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.6;
+    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 1.2;
+    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 1.2;
 
-    const frequency = 0.032;
+    const frequency = 0.035;
 
     const isLight = this.theme === 'light';
 
-    // Theme Parameters (Grey Range Adjustment)
-    // Dark mode: ~10 to ~50 (Deep charcoal noise)
-    // Light mode: ~210 to ~250 (Soft light-grey noise)
-    const baseVal = isLight ? 210 : 10;
-    const rangeVal = isLight ? 40 : 40;
+    // Distinct theme ranges for immediate visual contrast
+    // Dark mode: ~15 to ~75 (Deep Dark Charcoal Noise)
+    // Light mode: ~180 to ~245 (Crisp Light Platinum Noise)
+    const baseVal = isLight ? 180 : 15;
+    const rangeVal = isLight ? 65 : 60;
 
     let ptr = 0;
     for (let y = 0; y < bufH; y++) {
       for (let x = 0; x < bufW; x++) {
+        // Active motion coordinates combining time + mouse + scroll
         const nx = x * frequency + mouseXNorm + this.time;
-        const ny = y * frequency + mouseYNorm + (this.scroll * 0.002);
+        const ny = y * frequency + mouseYNorm + (this.scroll * 0.003) + (this.time * 0.5);
 
         let n = this.perlin2D(nx, ny) * 0.65;
-        n += this.perlin2D(nx * 2.1, ny * 2.1) * 0.35;
+        n += this.perlin2D(nx * 2.0, ny * 2.0) * 0.35;
 
         const normalized = Math.min(Math.max((n + 1) * 0.5, 0), 1);
         const greyVal = Math.floor(normalized * rangeVal + baseVal);
@@ -179,10 +182,8 @@ class OrganicClassicPerlinNoise {
   }
 
   start() {
-    if (!this.animationFrameId && !this.isLowPower) {
+    if (!this.animationFrameId) {
       this.loop();
-    } else if (this.isLowPower) {
-      this.render();
     }
   }
 
@@ -194,7 +195,7 @@ class OrganicClassicPerlinNoise {
   }
 }
 
-// Global reference for theme updates
+// Global reference for theme toggle
 window.perlinEngine = null;
 
 document.addEventListener('DOMContentLoaded', () => {
