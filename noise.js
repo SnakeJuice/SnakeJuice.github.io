@@ -1,9 +1,9 @@
 /**
- * Professional Perlin Noise / Flow Field Canvas Engine
- * Optimized for Smooth 60fps Rendering & Subtle Interactive Motion
+ * Monochromatic Grey / Charcoal Perlin Noise Canvas Engine
+ * Pure grayscale palette, organic noise fluid dynamics, high performance
  */
 
-class PerlinNoiseEngine {
+class GreyPerlinEngine {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) return;
@@ -13,26 +13,27 @@ class PerlinNoiseEngine {
     this.height = 0;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    // Mouse & Scroll Tracking with LERP smoothing
+    // Mouse & Scroll Tracking with smooth LERP
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scrollOffset = 0;
     this.targetScrollOffset = 0;
 
-    // Time & Animation Control
+    // Animation Control
     this.time = 0;
-    this.speed = 0.0004;
+    this.speed = 0.0003;
     this.isLowPower = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.animationFrameId = null;
 
-    // Particles Configuration
+    // Particles & Grid Setup
     this.particles = [];
-    this.particleCount = 140; // Balanced for high performance
+    this.particleCount = 180;
 
-    // Color Palette (Subtle Dark Obsidian & Fluid Mesh Accents)
+    // Pure Monochromatic Grayscale Palette (Dark Graphite, Slate Grey, Soft Silver)
     this.colors = [
-      'rgba(56, 189, 248, 0.15)',  /* Cyan glow */
-      'rgba(99, 102, 241, 0.18)',  /* Indigo glow */
-      'rgba(168, 85, 247, 0.12)'   /* Violet glow */
+      'rgba(255, 255, 255, 0.04)',
+      'rgba(200, 200, 200, 0.06)',
+      'rgba(140, 140, 140, 0.08)',
+      'rgba(90, 90, 90, 0.05)'
     ];
 
     this.init();
@@ -52,7 +53,6 @@ class PerlinNoiseEngine {
     this.canvas.height = this.height * this.dpr;
     this.ctx.scale(this.dpr, this.dpr);
 
-    // Initial mouse center
     this.mouse.x = this.mouse.targetX = this.width / 2;
     this.mouse.y = this.mouse.targetY = this.height / 2;
   }
@@ -66,10 +66,9 @@ class PerlinNoiseEngine {
     }, { passive: true });
 
     window.addEventListener('scroll', () => {
-      this.targetScrollOffset = window.scrollY * 0.15;
+      this.targetScrollOffset = window.scrollY * 0.12;
     }, { passive: true });
 
-    // Pause animation when tab is inactive to preserve resources
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         this.stop();
@@ -87,17 +86,15 @@ class PerlinNoiseEngine {
         y: Math.random() * this.height,
         vx: 0,
         vy: 0,
-        radius: Math.random() * 2.5 + 1.2,
+        radius: Math.random() * 2 + 1,
         color: this.colors[Math.floor(Math.random() * this.colors.length)],
-        life: Math.random() * 100 + 100,
-        maxLife: 200,
-        baseSpeed: Math.random() * 0.4 + 0.2
+        baseSpeed: Math.random() * 0.3 + 0.15
       });
     }
   }
 
   /**
-   * Fast Simplex-like Perlin 2D Noise Approximation
+   * Smooth Perlin 2D Noise algorithm
    */
   noise2D(x, y) {
     const X = Math.floor(x) & 255;
@@ -108,34 +105,31 @@ class PerlinNoiseEngine {
   }
 
   update() {
-    // Smooth LERP mouse & scroll interactions
-    this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
-    this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
-    this.scrollOffset += (this.targetScrollOffset - this.scrollOffset) * 0.05;
+    // Smooth LERP
+    this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.04;
+    this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.04;
+    this.scrollOffset += (this.targetScrollOffset - this.scrollOffset) * 0.04;
 
     this.time += this.speed;
 
-    const mouseFactorX = (this.mouse.x / this.width - 0.5) * 2;
-    const mouseFactorY = (this.mouse.y / this.height - 0.5) * 2;
+    const mouseFactorX = (this.mouse.x / this.width - 0.5) * 1.5;
+    const mouseFactorY = (this.mouse.y / this.height - 0.5) * 1.5;
 
     for (let p of this.particles) {
-      // Calculate angle based on Perlin field, mouse position, and scroll
       const angle = this.noise2D(
-        p.x * 0.002 + this.time + mouseFactorX * 0.1,
-        p.y * 0.002 + (this.scrollOffset * 0.001) + mouseFactorY * 0.1
+        p.x * 0.0015 + this.time + mouseFactorX * 0.08,
+        p.y * 0.0015 + (this.scrollOffset * 0.0008) + mouseFactorY * 0.08
       ) * Math.PI * 4;
 
-      p.vx += Math.cos(angle) * 0.04;
-      p.vy += Math.sin(angle) * 0.04;
+      p.vx += Math.cos(angle) * 0.03;
+      p.vy += Math.sin(angle) * 0.03;
 
-      // Apply subtle friction
-      p.vx *= 0.96;
-      p.vy *= 0.96;
+      p.vx *= 0.97;
+      p.vy *= 0.97;
 
       p.x += p.vx * p.baseSpeed;
       p.y += p.vy * p.baseSpeed;
 
-      // Wrap around screen boundaries smoothly
       if (p.x < 0) p.x = this.width;
       if (p.x > this.width) p.x = 0;
       if (p.y < 0) p.y = this.height;
@@ -144,34 +138,33 @@ class PerlinNoiseEngine {
   }
 
   render() {
-    // Dark background fade trail for smooth fluidity
-    this.ctx.fillStyle = 'rgba(7, 9, 14, 0.28)';
+    // Pure Deep Grey / Charcoal Base Background Fade (#121417)
+    this.ctx.fillStyle = 'rgba(18, 20, 23, 0.35)';
     this.ctx.fillRect(0, 0, this.width, this.height);
 
-    // Draw mesh connection lines & fluid particles
+    // Render Monochromatic Fluid Noise Mesh
     for (let i = 0; i < this.particles.length; i++) {
       const p1 = this.particles[i];
 
-      // Draw Particle
       this.ctx.beginPath();
       this.ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
       this.ctx.fillStyle = p1.color;
       this.ctx.fill();
 
-      // Connect nearby particles with ultra-subtle lines
+      // Delicate subtle grey connecting lines
       for (let j = i + 1; j < this.particles.length; j++) {
         const p2 = this.particles[j];
         const dx = p1.x - p2.x;
         const dy = p1.y - p2.y;
         const distSq = dx * dx + dy * dy;
 
-        if (distSq < 7200) { // Approx 85px max link distance
-          const alpha = (1 - distSq / 7200) * 0.08;
+        if (distSq < 6400) { // ~80px link limit
+          const alpha = (1 - distSq / 6400) * 0.05;
           this.ctx.beginPath();
           this.ctx.moveTo(p1.x, p1.y);
           this.ctx.lineTo(p2.x, p2.y);
-          this.ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
-          this.ctx.lineWidth = 0.8;
+          this.ctx.strokeStyle = `rgba(220, 220, 220, ${alpha})`;
+          this.ctx.lineWidth = 0.6;
           this.ctx.stroke();
         }
       }
@@ -188,7 +181,6 @@ class PerlinNoiseEngine {
     if (!this.animationFrameId && !this.isLowPower) {
       this.loop();
     } else if (this.isLowPower) {
-      // Fallback single static render for users with reduced motion
       this.render();
     }
   }
@@ -201,7 +193,6 @@ class PerlinNoiseEngine {
   }
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  new PerlinNoiseEngine('noise-canvas');
+  new GreyPerlinEngine('noise-canvas');
 });
