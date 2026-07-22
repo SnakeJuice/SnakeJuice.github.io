@@ -1,6 +1,6 @@
 /**
  * Dynamic 3D Organic Perlin Noise Generator
- * Evaluates Z-axis time domain in real-time for continuous fluid recalculation ("tv static" style organic evolution)
+ * Evaluates Z-axis time domain in real-time with custom OLED & Light mode contrast calibration
  */
 
 class DynamicStaticPerlinNoise {
@@ -12,16 +12,16 @@ class DynamicStaticPerlinNoise {
     this.width = 0;
     this.height = 0;
 
-    // Buffer canvas for high-performance direct pixel rendering
+    // Buffer canvas for pixel-grid noise computation
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
 
     // Scale resolution factor for smooth 60 FPS computation
     this.scale = 0.28; 
 
-    // Time domain Z evolution speed (creates continuous noise generation / static morphing)
+    // Time domain Z evolution speed
     this.zTime = 0;
-    this.zSpeed = 0.012; 
+    this.zSpeed = 0.014; 
 
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scroll = 0;
@@ -63,9 +63,6 @@ class DynamicStaticPerlinNoise {
     return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
   }
 
-  /**
-   * 3D Perlin Noise: Time (z) changes values at fixed (x,y) pixels like dynamic organic static
-   */
   perlin3D(x, y, z) {
     const X = Math.floor(x) & 255;
     const Y = Math.floor(y) & 255;
@@ -137,12 +134,10 @@ class DynamicStaticPerlinNoise {
   }
 
   render() {
-    // Mouse and scroll smooth LERP
     this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
     this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
     this.scroll += (this.targetScroll - this.scroll) * 0.05;
 
-    // Advance Z axis time for dynamic pixel-by-pixel noise generation
     this.zTime += this.zSpeed;
 
     const bufW = this.offscreen.width;
@@ -150,28 +145,26 @@ class DynamicStaticPerlinNoise {
     const imgData = this.offCtx.createImageData(bufW, bufH);
     const data = imgData.data;
 
-    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.5;
-    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.5;
+    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.6;
+    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.6;
 
-    const frequency = 0.038; // Density of noise texture
+    const frequency = 0.038;
 
     const isLight = this.theme === 'light';
 
-    // Greyscale ranges
-    // Dark mode: 15 to 75 (Deep charcoal morphing noise)
-    // Light mode: 180 to 245 (Soft platinum morphing noise)
-    const baseVal = isLight ? 180 : 15;
-    const rangeVal = isLight ? 65 : 60;
+    // Calibrated Greyscale Ranges for OLED / High-Dynamic Range Displays
+    // Dark mode: ~15 to ~75 (Deep Charcoal Noise)
+    // Light mode: ~130 to ~235 (High-contrast slate/silver noise field so motion & texture are clearly visible)
+    const baseVal = isLight ? 130 : 15;
+    const rangeVal = isLight ? 105 : 60;
 
     let ptr = 0;
     for (let y = 0; y < bufH; y++) {
       for (let x = 0; x < bufW; x++) {
-        // FIXED (x,y) screen coordinates + Z-Time evolution + mouse/scroll reactivity
         const nx = x * frequency + mouseXNorm;
         const ny = y * frequency + mouseYNorm + (this.scroll * 0.002);
         const nz = this.zTime;
 
-        // Multi-octave 3D Perlin Noise calculation
         let n = this.perlin3D(nx, ny, nz) * 0.65;
         n += this.perlin3D(nx * 2.0, ny * 2.0, nz * 1.5) * 0.35;
 
