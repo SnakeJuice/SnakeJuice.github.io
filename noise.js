@@ -1,7 +1,6 @@
 /**
- * Classical Organic Grey Perlin / Simplex Noise Texture Field Engine
- * Direct pixel-grid / organic noise rendering matching classic greyscale noise textures
- * Ultra-smooth motion, mouse reactive distortion, 60fps performance
+ * Classic Organic Perlin Noise Texture Engine
+ * Dual-Theme Support (Dark & Light Greyscale) + Smooth 60fps Performance
  */
 
 class OrganicClassicPerlinNoise {
@@ -13,24 +12,26 @@ class OrganicClassicPerlinNoise {
     this.width = 0;
     this.height = 0;
 
-    // Offscreen render buffer for pixel-perfect noise computation at high performance
+    // Offscreen render buffer for pixel-grid noise computation
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
 
-    // Scale factor for classic organic noise texture (lower resolution scaled up for smooth blur)
-    this.scale = 0.25; 
+    // Scale factor to maintain high FPS performance (0.28 resolution scale)
+    this.scale = 0.28; 
 
     // Time & Motion Controls
     this.time = 0;
-    this.speed = 0.006;
+    this.speed = 0.005; // Continuous organic animation speed
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scroll = 0;
     this.targetScroll = 0;
 
+    // Theme Mode: 'dark' or 'light'
+    this.theme = document.documentElement.getAttribute('data-theme') || 'dark';
+
     this.animationFrameId = null;
     this.isLowPower = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Permutation table for fast classic Perlin 2D Noise
     this.initPermutation();
     this.init();
   }
@@ -84,13 +85,16 @@ class OrganicClassicPerlinNoise {
     this.start();
   }
 
+  setTheme(newTheme) {
+    this.theme = newTheme;
+  }
+
   resize() {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.canvas.width = this.width;
     this.canvas.height = this.height;
 
-    // Buffer dimensions (scaled down for organic blur effect)
     this.offscreen.width = Math.ceil(this.width * this.scale);
     this.offscreen.height = Math.ceil(this.height * this.scale);
 
@@ -107,7 +111,7 @@ class OrganicClassicPerlinNoise {
     }, { passive: true });
 
     window.addEventListener('scroll', () => {
-      this.targetScroll = window.scrollY * 0.1;
+      this.targetScroll = window.scrollY * 0.08;
     }, { passive: true });
 
     document.addEventListener('visibilitychange', () => {
@@ -117,7 +121,7 @@ class OrganicClassicPerlinNoise {
   }
 
   render() {
-    // Smooth LERP mouse & scroll
+    // Smooth LERP mouse & scroll interaction
     this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.03;
     this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.03;
     this.scroll += (this.targetScroll - this.scroll) * 0.03;
@@ -129,28 +133,34 @@ class OrganicClassicPerlinNoise {
     const imgData = this.offCtx.createImageData(bufW, bufH);
     const data = imgData.data;
 
-    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.8;
-    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.8;
+    const mouseXNorm = (this.mouse.x / this.width - 0.5) * 0.6;
+    const mouseYNorm = (this.mouse.y / this.height - 0.5) * 0.6;
 
-    const frequency = 0.035; // Controls scale of organic noise folds
+    const frequency = 0.032;
+
+    const isLight = this.theme === 'light';
+
+    // Theme Parameters (Grey Range Adjustment)
+    // Dark mode: ~10 to ~50 (Deep charcoal noise)
+    // Light mode: ~210 to ~250 (Soft light-grey noise)
+    const baseVal = isLight ? 210 : 10;
+    const rangeVal = isLight ? 40 : 40;
 
     let ptr = 0;
     for (let y = 0; y < bufH; y++) {
       for (let x = 0; x < bufW; x++) {
-        // Compute 2-octave Perlin Noise for organic cloud texture
         const nx = x * frequency + mouseXNorm + this.time;
         const ny = y * frequency + mouseYNorm + (this.scroll * 0.002);
 
         let n = this.perlin2D(nx, ny) * 0.65;
         n += this.perlin2D(nx * 2.1, ny * 2.1) * 0.35;
 
-        // Map noise (-1..1) to subtle dark grey values (Range: ~12 to ~45 for dark readable background)
-        // High contrast grey noise texture with subtle dark range
-        const greyVal = Math.floor(Math.min(Math.max((n + 1) * 0.5, 0), 1) * 38 + 10);
+        const normalized = Math.min(Math.max((n + 1) * 0.5, 0), 1);
+        const greyVal = Math.floor(normalized * rangeVal + baseVal);
 
         data[ptr]     = greyVal;     // R
         data[ptr + 1] = greyVal;     // G
-        data[ptr + 2] = greyVal + 2; // B (Very subtle cool slate bias)
+        data[ptr + 2] = greyVal;     // B
         data[ptr + 3] = 255;         // Alpha
         ptr += 4;
       }
@@ -158,7 +168,6 @@ class OrganicClassicPerlinNoise {
 
     this.offCtx.putImageData(imgData, 0, 0);
 
-    // Draw offscreen buffer to main canvas with smooth bilinear scaling
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = 'high';
     this.ctx.drawImage(this.offscreen, 0, 0, this.width, this.height);
@@ -185,6 +194,9 @@ class OrganicClassicPerlinNoise {
   }
 }
 
+// Global reference for theme updates
+window.perlinEngine = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-  new OrganicClassicPerlinNoise('noise-canvas');
+  window.perlinEngine = new OrganicClassicPerlinNoise('noise-canvas');
 });
