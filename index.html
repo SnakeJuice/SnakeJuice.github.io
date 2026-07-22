@@ -1,1 +1,206 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>React App</title><script defer="defer" src="/static/js/main.66833163.js"></script><link href="/static/css/main.ac5649be.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cristian | Senior Full Stack & Systems Engineer</title>
+  <meta name="description" content="Portafolio profesional de Cristian. Desarrollo de software, arquitectura de sistemas y aplicaciones web de alto rendimiento.">
+  <link rel="icon" href="favicon.ico">
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Background Perlin Noise Canvas -->
+  <canvas id="noise-canvas"></canvas>
+
+  <!-- Navigation Header -->
+  <header class="header">
+    <div class="container nav">
+      <a href="#" class="logo">
+        <span class="logo-dot"></span>
+        Cristian<span class="gradient-text">.dev</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#proyectos">Proyectos</a></li>
+        <li><a href="#skills">Stack & Habilidades</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-content">
+      <div class="badge">
+        <span class="badge-pulse"></span>
+        Disponible para nuevos proyectos
+      </div>
+      <h1 class="hero-title">
+        Construyendo soluciones de software <span class="gradient-text">escalables y elegantes.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Ingeniero de Software enfocado en arquitectura de alto rendimiento, desarrollo Full-Stack e interfaces intuitivas que combinan estética moderna con ingeniería limpia.
+      </p>
+      <div class="hero-actions">
+        <a href="#proyectos" class="btn btn-primary">
+          <i class="fa-solid fa-rocket"></i> Ver Proyectos
+        </a>
+        <a href="https://github.com/SnakeJuice" target="_blank" rel="noopener" class="btn btn-secondary">
+          <i class="fa-brands fa-github"></i> GitHub Profile
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section (3 Templates Incluidos) -->
+  <section id="proyectos" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Proyectos Destacados</h2>
+        <p class="section-desc">Plantillas de proyectos en desarrollo e iniciativas técnicas clave.</p>
+      </div>
+
+      <div class="projects-grid">
+
+        <!-- Proyecto 1 Template -->
+        <article class="project-card">
+          <div class="project-img-wrapper">
+            <img src="project1.jpg" alt="Preview de Plataforma Analytics" class="project-img">
+            <span class="project-status">Próximamente</span>
+          </div>
+          <div class="project-body">
+            <h3 class="project-title">Cloud Metrics & Analytics System</h3>
+            <p class="project-desc">
+              Plataforma de monitoreo y métricas en tiempo real para servicios distribuidos en la nube con visualización avanzada de datos y alertas inteligentes.
+            </p>
+            <div class="project-tags">
+              <span class="tag">TypeScript</span>
+              <span class="tag">React / Next.js</span>
+              <span class="tag">Node.js</span>
+              <span class="tag">Tailwind CSS</span>
+            </div>
+            <div class="project-footer">
+              <a href="#" class="project-link">
+                <i class="fa-solid fa-code"></i> Ver Código Demo
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Proyecto 2 Template -->
+        <article class="project-card">
+          <div class="project-img-wrapper">
+            <img src="project2.jpg" alt="Preview de Motor de Inteligencia Artificial" class="project-img">
+            <span class="project-status">En Desarrollo</span>
+          </div>
+          <div class="project-body">
+            <h3 class="project-title">AI Knowledge Engine & Orchestrator</h3>
+            <p class="project-desc">
+              Motor de procesamiento de lenguaje natural y orquestación de agentes inteligentes para análisis automatizado de documentación y base de conocimiento.
+            </p>
+            <div class="project-tags">
+              <span class="tag">Python</span>
+              <span class="tag">FastAPI</span>
+              <span class="tag">OpenAI API</span>
+              <span class="tag">Vector DB</span>
+            </div>
+            <div class="project-footer">
+              <a href="#" class="project-link">
+                <i class="fa-solid fa-layer-group"></i> Ver Arquitectura
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Proyecto 3 Template -->
+        <article class="project-card">
+          <div class="project-img-wrapper">
+            <img src="project3.jpg" alt="Preview de Plataforma SaaS" class="project-img">
+            <span class="project-status">Próximamente</span>
+          </div>
+          <div class="project-body">
+            <h3 class="project-title">High-Performance Realtime Gateway</h3>
+            <p class="project-desc">
+              API Gateway de microservicios enfocado en ultra-baja latencia, autenticación descentralizada y manejo eficiente de WebSocket / gRPC.
+            </p>
+            <div class="project-tags">
+              <span class="tag">Go (Golang)</span>
+              <span class="tag">gRPC</span>
+              <span class="tag">Docker</span>
+              <span class="tag">Redis</span>
+            </div>
+            <div class="project-footer">
+              <a href="#" class="project-link">
+                <i class="fa-solid fa-terminal"></i> Ver Documentación
+              </a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills / Tech Stack Section -->
+  <section id="skills" class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Stack Tecnológico</h2>
+        <p class="section-desc">Tecnologías y herramientas con las que construyo productos de software.</p>
+      </div>
+
+      <div class="skills-grid">
+        <div class="skill-card">
+          <div class="skill-icon">
+            <i class="fa-solid fa-code"></i>
+          </div>
+          <h3 class="skill-title">Frontend Development</h3>
+          <p class="skill-list">JavaScript (ES6+), TypeScript, React, HTML5/CSS3, Modern Web APIs.</p>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon">
+            <i class="fa-solid fa-server"></i>
+          </div>
+          <h3 class="skill-title">Backend & APIs</h3>
+          <p class="skill-list">Node.js, Python, RESTful Services, GraphQL, SQL & NoSQL Databases.</p>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon">
+            <i class="fa-solid fa-cloud-bolt"></i>
+          </div>
+          <h3 class="skill-title">Architecture & DevOps</h3>
+          <p class="skill-list">Git, Docker, CI/CD Pipelines, Cloud Infrastructure, Clean Architecture.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer / Contact Section -->
+  <footer id="contacto" class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/SnakeJuice" target="_blank" rel="noopener" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        <a href="#" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="mailto:tu-email@dominio.com" title="Email"><i class="fa-solid fa-envelope"></i></a>
+      </div>
+      <p>&copy; 2026 Cristian. Construido con Perlin Noise en GitHub Pages.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="noise.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
