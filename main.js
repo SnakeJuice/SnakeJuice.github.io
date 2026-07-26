@@ -38,17 +38,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 2. Intersection Observer for Smooth Scroll Reveal
+  // 2. Smooth Scrolling for Navigation Links & Action Buttons
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (!targetId || targetId === '#') return;
+
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        e.preventDefault();
+        const headerOffset = 85;
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  // 3. Intersection Observer for Smooth Scroll Reveal
   const observerOptions = {
-    threshold: 0.12,
-    rootMargin: '0px 0px -40px 0px'
+    threshold: 0.1,
+    rootMargin: '0px 0px -30px 0px'
   };
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
+        entry.target.classList.add('visible');
         observer.unobserve(entry.target);
       }
     });
@@ -56,9 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const animatedElements = document.querySelectorAll('.project-card, .skill-card, .section-header');
   animatedElements.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
     observer.observe(el);
   });
 });
